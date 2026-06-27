@@ -1,6 +1,6 @@
 """
 Network Simulator using NetworkX
-Provides graph-based simulation of communication network topology.
+Provides graph-based simulation of communication network topology with batteries, coverage, and power.
 """
 
 import networkx as nx
@@ -15,20 +15,26 @@ class NetworkSimulator:
         self.events: list[dict] = []
 
     def _build_default_network(self):
-        """Build default network topology."""
+        """Build default network topology matching Chennai Central Grid."""
         # Nodes
         nodes = [
-            ("gateway-1", {"type": "gateway", "label": "Internet Gateway", "status": "healthy", "capacity": 100, "load": 35, "latency": 5, "connected_users": 0, "battery": 100, "x": 500, "y": 50}),
-            ("core-1", {"type": "core", "label": "Core Network A", "status": "healthy", "capacity": 100, "load": 45, "latency": 8, "connected_users": 0, "battery": 100, "x": 300, "y": 180}),
-            ("core-2", {"type": "core", "label": "Core Network B", "status": "healthy", "capacity": 100, "load": 40, "latency": 10, "connected_users": 0, "battery": 100, "x": 700, "y": 180}),
-            ("router-1", {"type": "router", "label": "Regional Router 1", "status": "healthy", "capacity": 80, "load": 55, "latency": 12, "connected_users": 0, "battery": 100, "x": 150, "y": 320}),
-            ("router-2", {"type": "router", "label": "Regional Router 2", "status": "healthy", "capacity": 80, "load": 50, "latency": 14, "connected_users": 0, "battery": 100, "x": 500, "y": 320}),
-            ("router-3", {"type": "router", "label": "Regional Router 3", "status": "healthy", "capacity": 80, "load": 48, "latency": 11, "connected_users": 0, "battery": 100, "x": 850, "y": 320}),
-            ("tower-1", {"type": "tower", "label": "Cell Tower Alpha", "status": "healthy", "capacity": 70, "load": 60, "latency": 18, "connected_users": 542, "battery": 95, "x": 80, "y": 480}),
-            ("tower-2", {"type": "tower", "label": "Cell Tower Beta", "status": "healthy", "capacity": 70, "load": 72, "latency": 22, "connected_users": 891, "battery": 88, "x": 280, "y": 480}),
-            ("tower-3", {"type": "tower", "label": "Cell Tower Gamma", "status": "healthy", "capacity": 70, "load": 45, "latency": 15, "connected_users": 634, "battery": 100, "x": 500, "y": 480}),
-            ("tower-4", {"type": "tower", "label": "Cell Tower Delta", "status": "healthy", "capacity": 70, "load": 38, "latency": 20, "connected_users": 423, "battery": 92, "x": 720, "y": 480}),
-            ("tower-5", {"type": "tower", "label": "Cell Tower Epsilon", "status": "healthy", "capacity": 70, "load": 65, "latency": 25, "connected_users": 756, "battery": 78, "x": 920, "y": 480}),
+            ("power-1", {"type": "powerGrid", "label": "Chennai Central Power Grid", "status": "healthy", "capacity": 500, "load": 65, "latency": 0, "connected_users": 0, "battery": 100, "powerConnected": True, "coverageRadius": 0, "x": 500, "y": 20}),
+            ("gateway-1", {"type": "gateway", "label": "Main Fiber Gateway", "status": "healthy", "capacity": 1000, "load": 35, "latency": 4, "connected_users": 0, "battery": 100, "powerConnected": True, "coverageRadius": 0, "x": 500, "y": 110}),
+            ("core-1", {"type": "core", "label": "Telecom Core A", "status": "healthy", "capacity": 500, "load": 42, "latency": 6, "connected_users": 0, "battery": 100, "powerConnected": True, "coverageRadius": 0, "x": 300, "y": 220}),
+            ("core-2", {"type": "core", "label": "Telecom Core B", "status": "healthy", "capacity": 500, "load": 38, "latency": 7, "connected_users": 0, "battery": 100, "powerConnected": True, "coverageRadius": 0, "x": 700, "y": 220}),
+            ("router-1", {"type": "router", "label": "Core Edge Router 1", "status": "healthy", "capacity": 300, "load": 50, "latency": 10, "connected_users": 0, "battery": 100, "powerConnected": True, "coverageRadius": 0, "x": 150, "y": 340}),
+            ("router-2", {"type": "router", "label": "Core Edge Router 2", "status": "healthy", "capacity": 300, "load": 45, "latency": 12, "connected_users": 0, "battery": 100, "powerConnected": True, "coverageRadius": 0, "x": 500, "y": 340}),
+            ("router-3", {"type": "router", "label": "Core Edge Router 3", "status": "healthy", "capacity": 300, "load": 48, "latency": 11, "connected_users": 0, "battery": 100, "powerConnected": True, "coverageRadius": 0, "x": 850, "y": 340}),
+            ("tower-1", {"type": "tower", "label": "Cell Tower Alpha (Anna Nagar)", "status": "healthy", "capacity": 100, "load": 58, "latency": 18, "connected_users": 540, "battery": 100, "powerConnected": True, "coverageRadius": 180, "x": 80, "y": 490}),
+            ("tower-2", {"type": "tower", "label": "Cell Tower Beta (Nungambakkam)", "status": "healthy", "capacity": 100, "load": 68, "latency": 20, "connected_users": 840, "battery": 100, "powerConnected": True, "coverageRadius": 170, "x": 290, "y": 490}),
+            ("tower-3", {"type": "tower", "label": "Cell Tower Gamma (T-Nagar)", "status": "healthy", "capacity": 100, "load": 44, "latency": 15, "connected_users": 610, "battery": 100, "powerConnected": True, "coverageRadius": 180, "x": 500, "y": 490}),
+            ("tower-4", {"type": "tower", "label": "Cell Tower Delta (Mylapore)", "status": "healthy", "capacity": 100, "load": 35, "latency": 22, "connected_users": 410, "battery": 100, "powerConnected": True, "coverageRadius": 160, "x": 710, "y": 490}),
+            ("tower-5", {"type": "tower", "label": "Cell Tower Epsilon (Adyar)", "status": "healthy", "capacity": 100, "load": 62, "latency": 24, "connected_users": 730, "battery": 100, "powerConnected": True, "coverageRadius": 195, "x": 920, "y": 490}),
+            ("phone-1", {"type": "phone", "label": "User Node Group A", "status": "healthy", "capacity": 10, "load": 5, "latency": 25, "connected_users": 120, "battery": 95, "powerConnected": True, "coverageRadius": 30, "x": 80, "y": 640}),
+            ("phone-2", {"type": "phone", "label": "User Node Group B", "status": "healthy", "capacity": 10, "load": 3, "latency": 30, "connected_users": 140, "battery": 90, "powerConnected": True, "coverageRadius": 30, "x": 290, "y": 640}),
+            ("phone-3", {"type": "phone", "label": "User Node Group C", "status": "healthy", "capacity": 10, "load": 7, "latency": 22, "connected_users": 180, "battery": 88, "powerConnected": True, "coverageRadius": 30, "x": 500, "y": 640}),
+            ("phone-4", {"type": "phone", "label": "User Node Group D", "status": "healthy", "capacity": 10, "load": 4, "latency": 28, "connected_users": 110, "battery": 92, "powerConnected": True, "coverageRadius": 30, "x": 710, "y": 640}),
+            ("phone-5", {"type": "phone", "label": "User Node Group E", "status": "healthy", "capacity": 10, "load": 6, "latency": 34, "connected_users": 155, "battery": 85, "powerConnected": True, "coverageRadius": 30, "x": 920, "y": 640}),
         ]
 
         for node_id, attrs in nodes:
@@ -36,24 +42,48 @@ class NetworkSimulator:
 
         # Edges
         edges = [
-            ("gateway-1", "core-1", {"type": "fiber", "bandwidth": 100, "latency": 3, "status": "active"}),
-            ("gateway-1", "core-2", {"type": "fiber", "bandwidth": 100, "latency": 4, "status": "active"}),
-            ("core-1", "core-2", {"type": "fiber", "bandwidth": 100, "latency": 5, "status": "active"}),
-            ("core-1", "router-1", {"type": "fiber", "bandwidth": 80, "latency": 6, "status": "active"}),
-            ("core-1", "router-2", {"type": "fiber", "bandwidth": 80, "latency": 7, "status": "active"}),
-            ("core-2", "router-2", {"type": "fiber", "bandwidth": 80, "latency": 6, "status": "active"}),
-            ("core-2", "router-3", {"type": "fiber", "bandwidth": 80, "latency": 8, "status": "active"}),
-            ("router-1", "tower-1", {"type": "backhaul", "bandwidth": 50, "latency": 8, "status": "active"}),
-            ("router-1", "tower-2", {"type": "backhaul", "bandwidth": 50, "latency": 9, "status": "active"}),
-            ("router-2", "tower-2", {"type": "backhaul", "bandwidth": 50, "latency": 7, "status": "active"}),
-            ("router-2", "tower-3", {"type": "backhaul", "bandwidth": 50, "latency": 8, "status": "active"}),
-            ("router-2", "tower-4", {"type": "backhaul", "bandwidth": 50, "latency": 10, "status": "active"}),
-            ("router-3", "tower-4", {"type": "backhaul", "bandwidth": 50, "latency": 9, "status": "active"}),
-            ("router-3", "tower-5", {"type": "backhaul", "bandwidth": 50, "latency": 11, "status": "active"}),
-            ("tower-1", "tower-2", {"type": "wireless", "bandwidth": 30, "latency": 5, "status": "active"}),
-            ("tower-2", "tower-3", {"type": "wireless", "bandwidth": 30, "latency": 5, "status": "active"}),
-            ("tower-3", "tower-4", {"type": "wireless", "bandwidth": 30, "latency": 5, "status": "active"}),
-            ("tower-4", "tower-5", {"type": "wireless", "bandwidth": 30, "latency": 5, "status": "active"}),
+            # Power
+            ("power-1", "gateway-1", {"type": "power", "bandwidth": 0, "latency": 0, "status": "active"}),
+            ("power-1", "core-1", {"type": "power", "bandwidth": 0, "latency": 0, "status": "active"}),
+            ("power-1", "core-2", {"type": "power", "bandwidth": 0, "latency": 0, "status": "active"}),
+            ("power-1", "router-1", {"type": "power", "bandwidth": 0, "latency": 0, "status": "active"}),
+            ("power-1", "router-2", {"type": "power", "bandwidth": 0, "latency": 0, "status": "active"}),
+            ("power-1", "router-3", {"type": "power", "bandwidth": 0, "latency": 0, "status": "active"}),
+            ("power-1", "tower-1", {"type": "power", "bandwidth": 0, "latency": 0, "status": "active"}),
+            ("power-1", "tower-2", {"type": "power", "bandwidth": 0, "latency": 0, "status": "active"}),
+            ("power-1", "tower-3", {"type": "power", "bandwidth": 0, "latency": 0, "status": "active"}),
+            ("power-1", "tower-4", {"type": "power", "bandwidth": 0, "latency": 0, "status": "active"}),
+            ("power-1", "tower-5", {"type": "power", "bandwidth": 0, "latency": 0, "status": "active"}),
+
+            # Gateway to cores
+            ("gateway-1", "core-1", {"type": "fiber", "bandwidth": 1000, "latency": 3, "status": "active"}),
+            ("gateway-1", "core-2", {"type": "fiber", "bandwidth": 1000, "latency": 4, "status": "active"}),
+            # Core to core
+            ("core-1", "core-2", {"type": "fiber", "bandwidth": 1000, "latency": 5, "status": "active"}),
+            # Cores to routers
+            ("core-1", "router-1", {"type": "fiber", "bandwidth": 800, "latency": 6, "status": "active"}),
+            ("core-1", "router-2", {"type": "fiber", "bandwidth": 800, "latency": 7, "status": "active"}),
+            ("core-2", "router-2", {"type": "fiber", "bandwidth": 800, "latency": 6, "status": "active"}),
+            ("core-2", "router-3", {"type": "fiber", "bandwidth": 800, "latency": 8, "status": "active"}),
+            # Routers to towers
+            ("router-1", "tower-1", {"type": "backhaul", "bandwidth": 500, "latency": 8, "status": "active"}),
+            ("router-1", "tower-2", {"type": "backhaul", "bandwidth": 500, "latency": 9, "status": "active"}),
+            ("router-2", "tower-2", {"type": "backhaul", "bandwidth": 500, "latency": 7, "status": "active"}),
+            ("router-2", "tower-3", {"type": "backhaul", "bandwidth": 500, "latency": 8, "status": "active"}),
+            ("router-2", "tower-4", {"type": "backhaul", "bandwidth": 500, "latency": 10, "status": "active"}),
+            ("router-3", "tower-4", {"type": "backhaul", "bandwidth": 500, "latency": 9, "status": "active"}),
+            ("router-3", "tower-5", {"type": "backhaul", "bandwidth": 500, "latency": 11, "status": "active"}),
+            # Towers to phones
+            ("tower-1", "phone-1", {"type": "wireless", "bandwidth": 100, "latency": 10, "status": "active"}),
+            ("tower-2", "phone-2", {"type": "wireless", "bandwidth": 100, "latency": 12, "status": "active"}),
+            ("tower-3", "phone-3", {"type": "wireless", "bandwidth": 100, "latency": 8, "status": "active"}),
+            ("tower-4", "phone-4", {"type": "wireless", "bandwidth": 100, "latency": 14, "status": "active"}),
+            ("tower-5", "phone-5", {"type": "wireless", "bandwidth": 100, "latency": 15, "status": "active"}),
+            # Inter-tower backups
+            ("tower-1", "tower-2", {"type": "wireless", "bandwidth": 300, "latency": 5, "status": "active"}),
+            ("tower-2", "tower-3", {"type": "wireless", "bandwidth": 300, "latency": 5, "status": "active"}),
+            ("tower-3", "tower-4", {"type": "wireless", "bandwidth": 300, "latency": 5, "status": "active"}),
+            ("tower-4", "tower-5", {"type": "wireless", "bandwidth": 300, "latency": 5, "status": "active"}),
         ]
 
         for src, tgt, attrs in edges:
@@ -74,23 +104,26 @@ class NetworkSimulator:
     def get_stats(self) -> dict:
         """Calculate network statistics."""
         all_nodes = list(self.graph.nodes(data=True))
-        healthy = [n for n in all_nodes if n[1].get("status") == "healthy"]
-        offline = [n for n in all_nodes if n[1].get("status") == "offline"]
-        degraded = [n for n in all_nodes if n[1].get("status") == "degraded"]
+        healthy = [n for n in all_nodes if n[1].get("status") == "healthy" and n[1].get("type") != "powerGrid"]
+        offline = [n for n in all_nodes if n[1].get("status") == "offline" and n[1].get("type") != "powerGrid"]
+        degraded = [n for n in all_nodes if n[1].get("status") == "degraded" and n[1].get("type") != "powerGrid"]
 
-        active_edges = [(u, v) for u, v, d in self.graph.edges(data=True) if d.get("status") != "broken"]
-        broken_edges = [(u, v) for u, v, d in self.graph.edges(data=True) if d.get("status") == "broken"]
+        active_edges = [(u, v) for u, v, d in self.graph.edges(data=True) if d.get("status") != "broken" and d.get("type") != "power"]
+        broken_edges = [(u, v) for u, v, d in self.graph.edges(data=True) if d.get("status") == "broken" and d.get("type") != "power"]
 
         avg_latency = 0
-        active_nodes = [n for n in all_nodes if n[1].get("status") != "offline"]
+        active_nodes = [n for n in all_nodes if n[1].get("status") != "offline" and n[1].get("type") != "powerGrid"]
         if active_nodes:
             avg_latency = round(sum(n[1].get("latency", 0) for n in active_nodes) / len(active_nodes))
 
         total_users = sum(n[1].get("connected_users", 0) for n in active_nodes)
-        coverage = round((len(healthy) + len(degraded)) / max(len(all_nodes), 1) * 100)
+        
+        towers = [n for n in all_nodes if n[1].get("type") in ["tower", "mesh", "drone"]]
+        active_towers = [t for t in towers if t[1].get("status") != "offline"]
+        coverage = round(len(active_towers) / max(len(towers), 1) * 100)
 
         return {
-            "total_nodes": len(all_nodes),
+            "total_nodes": len(all_nodes) - 1, # omit powerGrid
             "healthy": len(healthy),
             "offline": len(offline),
             "degraded": len(degraded),
@@ -136,7 +169,6 @@ class NetworkSimulator:
     def recover(self, strategy: str = "mesh", target_node: Optional[str] = None) -> dict:
         """Execute recovery strategy."""
         if strategy == "mesh":
-            # Add mesh node near offline nodes
             offline = [n for n, d in self.graph.nodes(data=True) if d.get("status") == "offline"]
             if offline:
                 mesh_id = f"mesh-{len([n for n in self.graph.nodes if 'mesh' in n]) + 1}"
@@ -152,13 +184,14 @@ class NetworkSimulator:
                     latency=20,
                     connected_users=0,
                     battery=100,
+                    powerConnected=True,
+                    coverageRadius=100,
                     x=target_data.get("x", 500) + random.randint(-50, 50),
                     y=target_data.get("y", 400) + random.randint(-50, 50),
                 )
-                # Connect to nearest healthy nodes
                 healthy_nodes = [
                     (n, d) for n, d in self.graph.nodes(data=True)
-                    if d.get("status") == "healthy" and d.get("type") != "phone"
+                    if d.get("status") == "healthy" and d.get("type") != "phone" and d.get("type") != "powerGrid"
                 ]
                 healthy_nodes.sort(
                     key=lambda nd: abs(nd[1].get("x", 0) - target_data.get("x", 0))
@@ -167,13 +200,15 @@ class NetworkSimulator:
                 for node, _ in healthy_nodes[:2]:
                     self.graph.add_edge(
                         mesh_id, node,
-                        type="mesh", bandwidth=30, latency=15, status="active"
+                        type="mesh", bandwidth=150, latency=12, status="active"
                     )
 
         elif strategy == "full":
             # Recover everything
             for node_id in self.graph.nodes:
                 self.graph.nodes[node_id]["status"] = "healthy"
+                self.graph.nodes[node_id]["battery"] = 100
+                self.graph.nodes[node_id]["powerConnected"] = True
                 if self.graph.nodes[node_id]["type"] == "tower":
                     self.graph.nodes[node_id]["connected_users"] = random.randint(300, 800)
                     self.graph.nodes[node_id]["latency"] = random.randint(12, 25)
@@ -198,7 +233,7 @@ class NetworkSimulator:
             if data.get("status") != "offline":
                 active_graph.add_node(node_id)
         for u, v, data in self.graph.edges(data=True):
-            if data.get("status") != "broken" and u in active_graph and v in active_graph:
+            if data.get("status") != "broken" and data.get("type") != "power" and u in active_graph and v in active_graph:
                 active_graph.add_edge(u, v, weight=data.get("latency", 1))
 
         try:
