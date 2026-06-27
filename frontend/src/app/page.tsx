@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Activity, BookOpen, Layers, Milestone, Radio, Laptop, ShieldCheck } from "lucide-react";
+import { Activity, BookOpen, Layers, Milestone, Radio, HelpCircle, ArrowLeft } from "lucide-react";
+import { Hero } from "@/components/sections/hero";
+import { TutorialChapters } from "@/components/sections/tutorial-chapters";
 import { SimulationTab } from "@/components/sections/simulation-tab";
 import { ExploreTab } from "@/components/sections/explore-tab";
 import { LearnTab } from "@/components/sections/learn-tab";
@@ -10,9 +12,19 @@ import { ResearchTab } from "@/components/sections/research-tab";
 import { Footer } from "@/components/sections/footer";
 
 type TabId = "simulate" | "learn" | "explore" | "research";
+type ViewMode = "tutorial" | "simulator";
 
 export default function Home() {
+  const [viewMode, setViewMode] = useState<ViewMode>("tutorial");
   const [activeTab, setActiveTab] = useState<TabId>("simulate");
+
+  const enterSimulator = () => {
+    setViewMode("simulator");
+  };
+
+  const backToTutorial = () => {
+    setViewMode("tutorial");
+  };
 
   return (
     <main className="relative min-h-screen bg-[#050505] text-white flex flex-col justify-between">
@@ -34,47 +46,84 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Tab Selection buttons */}
-          <div className="flex items-center gap-1.5 bg-black/60 p-1 rounded-xl border border-white/5">
-            {[
-              { id: "simulate", label: "Simulate Twin", icon: <Activity className="w-4 h-4" /> },
-              { id: "learn", label: "Learn Physics", icon: <BookOpen className="w-4 h-4" /> },
-              { id: "explore", label: "Explore Stack", icon: <Layers className="w-4 h-4" /> },
-              { id: "research", label: "Research", icon: <Milestone className="w-4 h-4" /> },
-            ].map((t) => (
+          {/* Mode-specific actions */}
+          <div className="flex items-center gap-3">
+            {viewMode === "tutorial" ? (
               <button
-                key={t.id}
-                onClick={() => setActiveTab(t.id as TabId)}
-                className={`flex items-center gap-2 text-xs px-3.5 py-2 rounded-lg font-medium transition-all ${
-                  activeTab === t.id
-                    ? "bg-[#10b981] text-black font-bold"
-                    : "text-text-muted hover:text-white hover:bg-white/5"
-                }`}
+                onClick={enterSimulator}
+                className="btn-primary text-xs font-bold flex items-center gap-1.5 px-4 py-2"
               >
-                {t.icon}
-                <span>{t.label}</span>
+                <span>Skip to Simulator Sandbox</span>
+                <Activity className="w-3.5 h-3.5" />
               </button>
-            ))}
+            ) : (
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={backToTutorial}
+                  className="btn-secondary text-xs font-bold flex items-center gap-1.5 px-3 py-2"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Back to Story</span>
+                </button>
+
+                {/* Tab Selection buttons */}
+                <div className="flex items-center gap-1.5 bg-black/60 p-1 rounded-xl border border-white/5">
+                  {[
+                    { id: "simulate", label: "Simulate Twin", icon: <Activity className="w-4 h-4" /> },
+                    { id: "learn", label: "Learn Physics", icon: <BookOpen className="w-4 h-4" /> },
+                    { id: "explore", label: "Explore Stack", icon: <Layers className="w-4 h-4" /> },
+                    { id: "research", label: "Research", icon: <Milestone className="w-4 h-4" /> },
+                  ].map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => setActiveTab(t.id as TabId)}
+                      className={`flex items-center gap-2 text-xs px-3.5 py-2 rounded-lg font-medium transition-all ${
+                        activeTab === t.id
+                          ? "bg-[#10b981] text-black font-bold"
+                          : "text-text-muted hover:text-white hover:bg-white/5"
+                      }`}
+                    >
+                      {t.icon}
+                      <span>{t.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </header>
 
-      {/* 2. Main Tab View content */}
+      {/* 2. Main content area depending on viewMode */}
       <section className="max-w-7xl mx-auto px-6 py-6 w-full flex-1">
         <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.2 }}
-            className="w-full h-full"
-          >
-            {activeTab === "simulate" && <SimulationTab />}
-            {activeTab === "learn" && <LearnTab />}
-            {activeTab === "explore" && <ExploreTab />}
-            {activeTab === "research" && <ResearchTab />}
-          </motion.div>
+          {viewMode === "tutorial" ? (
+            <motion.div
+              key="tutorial-view"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.25 }}
+              className="flex flex-col gap-12"
+            >
+              <Hero />
+              <TutorialChapters onEnterSimulator={enterSimulator} />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="simulator-view"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.25 }}
+              className="w-full h-full"
+            >
+              {activeTab === "simulate" && <SimulationTab />}
+              {activeTab === "learn" && <LearnTab />}
+              {activeTab === "explore" && <ExploreTab />}
+              {activeTab === "research" && <ResearchTab />}
+            </motion.div>
+          )}
         </AnimatePresence>
       </section>
 

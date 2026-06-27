@@ -38,7 +38,7 @@ class RecoveryRequest(BaseModel):
     target_node: Optional[str] = None
 
 
-@app.get("/")
+@app.get("/api/health")
 async def root():
     return {
         "name": "OpenSelfHealNet API",
