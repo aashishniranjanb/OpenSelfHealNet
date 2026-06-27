@@ -87,6 +87,8 @@ async def find_path(source: str, target: str):
     return {"source": source, "target": target, "path": path}
 
 
+from fastapi.staticfiles import StaticFiles
+
 # WebSocket for live updates
 connected_clients: list[WebSocket] = []
 
@@ -126,6 +128,10 @@ async def websocket_endpoint(websocket: WebSocket):
 
     except WebSocketDisconnect:
         connected_clients.remove(websocket)
+
+
+# Mount Next.js static build directory (frontend/out) to serve the user interface on port 8000
+app.mount("/", StaticFiles(directory="../frontend/out", html=True), name="static")
 
 
 if __name__ == "__main__":
